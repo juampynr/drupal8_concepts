@@ -68,5 +68,47 @@ foreach (array('Core', 'Component') as $parent_directory) {
     }
   }
 }
+```
 
-* [Lambda Functions and Closures](http://es1.php.net/manual/en/functions.anonymous.php)
+## [Funciones anónimas](http://es1.php.net/manual/en/functions.anonymous.php)
+
+También conocidas como funciones lambda o closures, permiten definir una función on the fly.
+
+Ésto es muy común en JavaScript:
+
+```javascript
+$.post('ajax/test.html', function(data) {
+  $('.result').html(data);
+});
+```
+Hasta ahora, cuando teníamos que definir una callback function en PHP 5.2, teníamos que hacerlo
+de éste modo:
+
+```php
+// http://php.net/manual/en/function.array-map.php#example-4915
+function cube($n) {
+  return($n * $n * $n);
+}
+
+$a = array(1, 2, 3, 4, 5);
+$b = array_map("cube", $a);
+print_r($b);
+```
+
+Mientras que en PHP 5.3 podemos encapsular la función en una variable. Por si queremos
+reutilizarla en el contexto en el que se encuentra.
+```php
+$cube = function($value) {
+    return $value * $value * $value;
+};
+
+$a = array(1, 2, 3, 4, 5);
+$b = array_map($cube, $a);
+print_r($b);
+```
+
+O podemos implementarla directamente:
+```php
+$a = array(1, 2, 3, 4, 5);
+$b = array_map(function($value) { return $value * $value * $value; }, $a);
+```
