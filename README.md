@@ -112,3 +112,119 @@ O podemos implementarla directamente:
 $a = array(1, 2, 3, 4, 5);
 $b = array_map(function($value) { return $value * $value * $value; }, $a);
 ```
+
+## Orientación a Objetos en Drupal 8
+
+Drupal 7 implementa una orientación a objetos muy básica. Como mucho vemos clases, herencia,
+y algún interfaz.
+
+Los hooks en Drupal 7 se implementan siguiendo una convención en el nombre
+de la función dentro de un módulo
+
+```php
+// modules/user/user.module
+$items['user/logout'] = array(
+  'title' => 'Log out',
+  'access callback' => 'user_is_logged_in',
+  'page callback' => 'user_logout',
+  'weight' => 10,
+  'menu_name' => 'user-menu',
+  'file' => 'user.pages.inc',
+);
+
+```
+
+Mientras que en Drupal 8 se hace uso extensivo de herencia e interfaces para implementar
+eventos en vez de hooks.
+
+Por ejemplo, el evento `authentication_provider` permite definir métodos para
+autentificar una petición (por defecto se mira si hay una cookie con un usuario).
+El módulo OAuth se registra a este evento mediante la opción `tags`:
+
+```
+http://drupalcode.org/project/oauth.git/blob/refs/heads/8.x-1.x:/oauth.services.yml
+services:
+  authentication.oauth:
+    class: Drupal\oauth\Authentication\Provider\OAuthDrupalProvider
+    tags:
+      - { name: authentication_provider, priority: 100 }
+```
+
+Luego, el Event dispatcher de Symfony2 avisa a todas las clases registradas
+a un evento en particular:
+
+```php
+// core/vendor/symfony/event-dispatcher/Symfony/Component/EventDispatcher/EventDispatcher.php
+/**
+ * @see EventDispatcherInterface::dispatch
+ *
+ * @api
+ */
+public function dispatch($eventName, Event $event = null)
+{
+  if (null === $event) {
+    $event = new Event();
+  }
+
+  $event->setDispatcher($this);
+  $event->setName($eventName);
+
+  if (!isset($this->listeners[$eventName])) {
+    return $event;
+  }
+
+  $this->doDispatch($this->getListeners($eventName), $eventName, $event);
+    return $event;
+  }
+}
+```
+
+Nuestra clase en OAuth implementa un interfaz, el cual define qué métodos debe
+implementar para comportarse correctamente:
+
+```php
+// http://drupalcode.org/project/oauth.git/blob/refs/heads/8.x-1.x:/lib/Drupal/oauth/Authentication/Provider/OAuthDrupalProvider.php
+
+namespace Drupal\oauth\Authentication\Provider;
+
+use Drupal\Core\Authentication\AuthenticationProviderInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+use \OauthProvider;
+
+/**
+ * Oauth authentication provider.
+ */
+class OAuthDrupalProvider implements AuthenticationProviderInterface {
+
+  /**
+   * An authenticated user object.
+   *
+   * @var \Drupal\user\UserBCDecorator
+   */
+  protected $user;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function applies(Request $request) {
+    // Only check requests with the 'authorization' header starting with OAuth.
+    return preg_match('/^OAuth/', $request->headers->get('authorization'));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function authenticate(Request $request) {
+    // Here we authenticate the request.
+  }
+
+}
+```
+
+
+
+
