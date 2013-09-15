@@ -180,8 +180,8 @@ public function dispatch($eventName, Event $event = null)
 }
 ```
 
-Nuestra clase en OAuth implementa un interfaz, el cual define qué métodos debe
-implementar para comportarse correctamente:
+Nuestra clase en OAuth implementa el interfaz `AuthenticationProviderInterface`,
+el cual define qué métodos debe implementar para comportarse correctamente:
 
 ```php
 // http://drupalcode.org/project/oauth.git/blob/refs/heads/8.x-1.x:/lib/Drupal/oauth/Authentication/Provider/OAuthDrupalProvider.php
