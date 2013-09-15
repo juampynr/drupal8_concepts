@@ -11,7 +11,8 @@ versión que introduce, entre otros, los siguientes conceptos:
 
 ## [Namespaces](http://es1.php.net/namespaces)
 
-Un namespace define la localización de una clase. En Java se usan desde hace mucho tiempo.
+Un namespace define la localización de de clases, interfaces, funciones y constantes. En Java se usan desde
+hace mucho tiempo.
 
 Por el momento, PHP soporta Namespaces sólo para clases, no para funciones.
 
